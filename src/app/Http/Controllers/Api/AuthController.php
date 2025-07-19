@@ -12,7 +12,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -25,9 +24,7 @@ class AuthController extends Controller
      */
     public function register(RegisterUserRequest $request): JsonResponse
     {
-        Log::info('Register user');
         $data = $request->validated();
-        Log::info('Validated');
 
         $user = User::create([
             'name' => $data['name'],
@@ -37,11 +34,10 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
         ]);
 
-//        $user->notify(new WelcomeNotification());
+        $user->notify(new WelcomeNotification());
 
         return response()->json([
             'token' => $user->createToken('api-token')->plainTextToken,
-//            'user' => $user,
         ], 201);
     }
 
@@ -163,7 +159,6 @@ class AuthController extends Controller
         ]);
 
         $cachedCode = Cache::get("login_code:{$request->phone}");
-        Log::info("Cached code for {$request->phone}: {$cachedCode}");
         if (!$cachedCode || $cachedCode != $request->code) {
             return response()->json(['message' => 'Неверный или просроченный код'], 401);
         }
