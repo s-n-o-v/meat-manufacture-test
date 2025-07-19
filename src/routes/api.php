@@ -10,10 +10,8 @@ Route::get('/ping', function () {
 });
 
 Route::post('/register', [AuthController::class, 'register']);
-// Можно авторизоваться по email + пароль от учетки
-Route::post('/login/email', [AuthController::class, 'loginByEmail']);
 // Можно авторизоваться по телефону + пароль от учетки
-// Route::post('/login/phone', [AuthController::class, 'loginByPhone']);
+Route::post('/login', [AuthController::class, 'login']);
 
 // Запрос на получение кода и верификация кода для номера телефона
 Route::post('/login/phone/verify-code', [AuthController::class, 'verifyPhoneCode']);
@@ -25,7 +23,7 @@ Route::apiResource('products', ProductController::class)->only('index');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::get('/all-orders', [OrderController::class, 'index']); // Админ
-    Route::get('/orders', [OrderController::class, 'userOrders']); // Пользователь
+#    Route::get('/all-orders', [OrderController::class, 'index']);
+    Route::get('/orders', [OrderController::class, 'userOrders']); // по пользователю
     Route::post('/orders', [OrderController::class, 'store']); // Новый заказ
 });

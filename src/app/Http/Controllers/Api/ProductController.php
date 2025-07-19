@@ -12,7 +12,17 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Получить список товаров.
+     *
+     * @OA\Get(
+     *     path="/api/products",
+     *     tags={"Products"},
+     *     summary="Получить список товаров",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список товаров"
+     *     )
+     * )
      */
     public function index(): AnonymousResourceCollection
     {

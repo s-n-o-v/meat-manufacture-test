@@ -14,6 +14,19 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+/**
+ * @OA\Info(
+ *     version="1.0.0",
+ *     title="Meat Manufacture API. !Test project",
+ *     description="Документация API проекта"
+ * )
+ *
+ * @OA\SecurityScheme(
+ *     securityScheme="sanctum",
+ *     type="http",
+ *     scheme="bearer"
+ * )
+ */
 class AuthController extends Controller
 {
     /**
@@ -21,6 +34,39 @@ class AuthController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     *
+     * @OA\Post(
+     *     path="/api/register",
+     *     tags={"Auth"},
+     *     summary="Регистрация пользователя",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "phone", "address", "password"},
+     *             @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *             @OA\Property(property="email", type="string", example="ivan@example.com"),
+     *             @OA\Property(property="phone", type="string", example="+996555123456"),
+     *             @OA\Property(property="address", type="string", example="г. Бишкек, ул. Пример, 123"),
+     *             @OA\Property(property="password", type="string", example="secret123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Пользователь зарегистрирован"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 example={"phone": {"The phone number has already been taken"}, "email": {"The email has already been taken"}}
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function register(RegisterUserRequest $request): JsonResponse
     {
@@ -47,6 +93,47 @@ class AuthController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     *
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Auth"},
+     *     summary="Авторизация по email или телефону и паролю",
+     *     description="Позволяет пользователю авторизоваться по email или телефону. Возвращает токен доступа при успешной авторизации.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"login","password"},
+     *             @OA\Property(property="login", type="string", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", example="secret123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Успешная авторизация",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string", example="1|fR7aG45U...nXFa")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Неверные учетные данные",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Invalid user credentials")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 example={"login": {"Поле login обязательно"}, "password": {"Поле password обязательно"}}
+     *             )
+     *         )
+     *     )
+     * )
      */
     public function login(Request $request): JsonResponse
     {
@@ -64,56 +151,8 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'token' => $user->createToken('api-token')->plainTextToken,
-            'user' => $user,
+            'token' => $user->createToken('api_token')->plainTextToken,
         ]);
-    }
-
-    /**
-     * Авторизация по email + пароль
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function loginByEmail(Request $request): JsonResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid email or password'], 401);
-        }
-
-        $user = Auth::user();
-        $token = $user->createToken('api_token')->plainTextToken;
-
-        return response()->json(['token' => $token]);
-    }
-
-    /**
-     * Авторизация по телефону + пароль
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function loginByPhone(Request $request): JsonResponse
-    {
-        $request->validate([
-            'phone' => ['required'],
-            'password' => ['required'],
-        ]);
-
-        $user = User::where('phone', $request->phone)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid phone or password'], 401);
-        }
-
-        $token = $user->createToken('api_token')->plainTextToken;
-
-        return response()->json(['token' => $token]);
     }
 
     /**
@@ -122,6 +161,34 @@ class AuthController extends Controller
      * @param Request $request
      * @param SmsService $sms
      * @return JsonResponse
+     *
+     * @OA\Post(
+     *     path="/api/login/phone/request-code",
+     *     tags={"Auth"},
+     *     summary="Запросить код по телефону",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"phone"},
+     *             @OA\Property(property="phone", type="string", example="+79998887766")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Код отправлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Code sent")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Пользователь не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации"
+     *     ),
+     * )
      */
     public function requestPhoneCode(Request $request): JsonResponse
     {
@@ -150,6 +217,21 @@ class AuthController extends Controller
      *
      * @param Request $request
      * @return JsonResponse
+     *
+     * @OA\Post(
+     *     path="/api/login/phone/verify-code",
+     *     tags={"Auth"},
+     *     summary="Подтвердить код входа",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"phone", "code"},
+     *             @OA\Property(property="phone", type="string", example="+996555123456"),
+     *             @OA\Property(property="code", type="string", example="1234")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Авторизация прошла успешно")
+     * )
      */
     public function verifyPhoneCode(Request $request): JsonResponse
     {
