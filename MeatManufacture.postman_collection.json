@@ -113,7 +113,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"phone\":\"+799999999991\"\n}",
+					"raw": "{\n\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -132,6 +132,41 @@
 						"login",
 						"phone",
 						"request-code"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login_by_password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"login\":\"+799999999991\",\n    \"password\": \"password\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"login"
 					]
 				}
 			},
@@ -187,7 +222,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"phone\":\"+79999999990\",\n    \"email\": \"aaa@aa.aa\",\n    \"name\": \"ALbert Einstein\",\n    \"address\": \"address\",\n    \"password\": \"password\"\n}",
+					"raw": "{\n    \"phone\":\"+7999999999\",\n    \"email\": \"aaa@aa.aa\",\n    \"name\": \"ALbert Einstein\",\n    \"address\": \"address\",\n    \"password\": \"password\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
